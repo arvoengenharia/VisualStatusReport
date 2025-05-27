@@ -177,15 +177,14 @@
       <img src="logos/alares.png" alt="Logo Alares">
     </div>
     <h1>SETOR</h1>
-    <button onclick="trocarImagem('a', this)">SETOR A</button>
-    <button onclick="trocarImagem('b', this)">SETOR B</button>
-    <button onclick="trocarImagem('c', this)">SETOR C</button>
-    <button onclick="trocarImagem('d', this)">SETOR D</button>
-
+    <button id="setorA" onclick="trocarImagem('a', this)">SETOR A</button>
+    <button id="setorB" onclick="trocarImagem('b', this)">SETOR B</button>
+    <button id="setorC" onclick="trocarImagem('c', this)">SETOR C</button>
+    <button id="setorD" onclick="trocarImagem('d', this)">SETOR D</button>
     <div class="pontos-area">
       <h2 id="tituloPontos" style="display: none;">Pontos</h2>
       <div id="pontosContainer" class="pontos"></div>
-      <div id="mensagemSetor">Selecione o setor</div>
+      <!-- "Selecione o setor" removido! -->
     </div>
   </div>
 
@@ -207,23 +206,11 @@
     let setorAtual = null;
     let pontoAtual = null;
     let botaoSelecionado = null;
-    let ultimoToken = 0; // Para race condition
+    let ultimoToken = 0; // Para evitar corrida assíncrona
 
+    // Mudança: setor não pode ser desselecionado
     function trocarImagem(setor, botao) {
-      if (setorAtual === setor) {
-        setorAtual = null;
-        pontoAtual = null;
-        imagemAtual = null;
-        botao.classList.remove('ativo');
-        botaoSelecionado = null;
-        document.getElementById('pontosContainer').innerHTML = '';
-        document.getElementById('tituloPontos').style.display = 'none';
-        document.getElementById('mensagemSetor').style.display = 'block';
-        document.getElementById('setorImagem').src = '';
-        document.getElementById('legendaImagem').textContent = '';
-        document.getElementById('navButtons').style.display = 'none';
-        return;
-      }
+      if (setorAtual === setor) return; // Não faz nada se clicar no já selecionado
 
       if (botaoSelecionado) botaoSelecionado.classList.remove('ativo');
       botao.classList.add('ativo');
@@ -236,7 +223,6 @@
       document.getElementById('setorImagem').src = `setores/${setor}.png`;
       document.getElementById('setorImagem').alt = `Imagem do Setor ${setor.toUpperCase()}`;
       document.getElementById('legendaImagem').textContent = '';
-      document.getElementById('mensagemSetor').style.display = 'none';
       document.getElementById('navButtons').style.display = 'none';
       gerarPontos(setor);
     }
@@ -340,6 +326,18 @@
         verificarImagem(numero + direcao, direcao, token);
       };
       teste.src = caminho;
+    }
+
+    // AO INICIAR: Setor A já selecionado!
+    window.onload = function() {
+      const botaoA = document.getElementById('setorA');
+      botaoA.classList.add('ativo');
+      botaoSelecionado = botaoA;
+      setorAtual = 'a';
+      document.getElementById('setorImagem').src = `setores/a.png`;
+      document.getElementById('setorImagem').alt = `Imagem do Setor A`;
+      gerarPontos('a');
+      // Não seleciona ponto ao iniciar
     }
   </script>
 </body>
