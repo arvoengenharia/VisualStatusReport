@@ -201,119 +201,147 @@
     </div>
   </div>
 
-  <script>
-    const pontosSetores = { a: 13, b: 4, c: 8, d: 9 };
-    let imagemAtual = null;
-    let setorAtual = null;
-    let pontoAtual = null;
-    let botaoSelecionado = null;
+<script>
+  const pontosSetores = { a: 13, b: 4, c: 8, d: 9 };
+  let imagemAtual = null;
+  let setorAtual = null;
+  let pontoAtual = null;
+  let botaoSelecionado = null;
+  let ultimoToken = 0; // Para evitar race condition
 
-    function trocarImagem(setor, botao) {
-      if (setorAtual === setor) {
-        setorAtual = null;
-        pontoAtual = null;
-        imagemAtual = null;
-        botao.classList.remove('ativo');
-        botaoSelecionado = null;
-        document.getElementById('pontosContainer').innerHTML = '';
-        document.getElementById('tituloPontos').style.display = 'none';
-        document.getElementById('mensagemSetor').style.display = 'block';
-        document.getElementById('setorImagem').src = 'setores/a.png';
-        document.getElementById('legendaImagem').textContent = '';
-        document.getElementById('navButtons').style.display = 'none';
-        return;
-      }
-
-      if (botaoSelecionado) botaoSelecionado.classList.remove('ativo');
-      botao.classList.add('ativo');
-      botaoSelecionado = botao;
-
-      setorAtual = setor;
+  function trocarImagem(setor, botao) {
+    if (setorAtual === setor) {
+      setorAtual = null;
       pontoAtual = null;
       imagemAtual = null;
-
-      document.getElementById('setorImagem').src = `setores/${setor}.png`;
-      document.getElementById('setorImagem').alt = `Imagem do Setor ${setor.toUpperCase()}`;
+      botao.classList.remove('ativo');
+      botaoSelecionado = null;
+      document.getElementById('pontosContainer').innerHTML = '';
+      document.getElementById('tituloPontos').style.display = 'none';
+      document.getElementById('mensagemSetor').style.display = 'block';
+      document.getElementById('setorImagem').src = '';
       document.getElementById('legendaImagem').textContent = '';
-      document.getElementById('mensagemSetor').style.display = 'none';
       document.getElementById('navButtons').style.display = 'none';
-      gerarPontos(setor);
+      return;
     }
 
-    function gerarPontos(setor) {
-      const container = document.getElementById('pontosContainer');
-      container.innerHTML = '';
-      document.getElementById('tituloPontos').style.display = 'block';
+    if (botaoSelecionado) botaoSelecionado.classList.remove('ativo');
+    botao.classList.add('ativo');
+    botaoSelecionado = botao;
 
-      for (let i = 1; i <= pontosSetores[setor]; i++) {
-        const ponto = document.createElement('div');
-        ponto.classList.add('ponto');
-        ponto.innerText = i;
-        ponto.onclick = () => {
-          document.querySelectorAll('.ponto').forEach(p => p.classList.remove('ativo'));
-          ponto.classList.add('ativo');
-          abrirImagem(setor, i);
-        };
-        container.appendChild(ponto);
-      }
-    }
+    setorAtual = setor;
+    pontoAtual = null;
+    imagemAtual = null;
 
-    function abrirImagem(setor, ponto) {
-      setorAtual = setor;
-      pontoAtual = ponto;
-      imagemAtual = null;
-      verificarEmptyOuBuscar();
-    }
+    document.getElementById('setorImagem').src = `setores/${setor}.png`;
+    document.getElementById('setorImagem').alt = `Imagem do Setor ${setor.toUpperCase()}`;
+    document.getElementById('legendaImagem').textContent = '';
+    document.getElementById('mensagemSetor').style.display = 'none';
+    document.getElementById('navButtons').style.display = 'none';
+    gerarPontos(setor);
+  }
 
-    function verificarEmptyOuBuscar() {
-      const emptyTest = new Image();
-      emptyTest.onload = () => {
-        document.getElementById('setorImagem').src = 'pontos/empty.png';
-        document.getElementById('setorImagem').alt = 'Imagem não disponível';
-        document.getElementById('navButtons').style.display = 'none';
-        document.getElementById('legendaImagem').textContent = 'Nenhuma imagem encontrada';
+  function gerarPontos(setor) {
+    const container = document.getElementById('pontosContainer');
+    container.innerHTML = '';
+    document.getElementById('tituloPontos').style.display = 'block';
+
+    for (let i = 1; i <= pontosSetores[setor]; i++) {
+      const ponto = document.createElement('div');
+      ponto.classList.add('ponto');
+      ponto.innerText = i;
+      ponto.onclick = () => {
+        document.querySelectorAll('.ponto').forEach(p => p.classList.remove('ativo'));
+        ponto.classList.add('ativo');
+        abrirImagem(setor, i);
       };
-      emptyTest.onerror = () => buscarPrimeiraImagem(22);
-      emptyTest.src = `pontos/${setorAtual}${pontoAtual}/empty.png`;
+      container.appendChild(ponto);
     }
+  }
 
-    function buscarPrimeiraImagem(numero) {
-      if (numero > 99) return;
-      const caminho = `pontos/${setorAtual}${pontoAtual}/w${numero}.jpg`;
-      const teste = new Image();
-      teste.onload = () => {
-        imagemAtual = numero;
-        exibirImagemAtual();
-        document.getElementById('navButtons').style.display = 'flex';
-      };
-      teste.onerror = () => buscarPrimeiraImagem(numero + 1);
-      teste.src = caminho;
-    }
+  function abrirImagem(setor, ponto) {
+    setorAtual = setor;
+    pontoAtual = ponto;
+    imagemAtual = null;
+    ultimoToken++; // Para evitar corrida assíncrona
+    verificarEmptyOuBuscar(ultimoToken);
+  }
 
-    function exibirImagemAtual() {
-      const caminho = `pontos/${setorAtual}${pontoAtual}/w${imagemAtual}.jpg`;
-      document.getElementById('setorImagem').src = caminho;
-      document.getElementById('setorImagem').alt = `Ponto ${pontoAtual} do Setor ${setorAtual.toUpperCase()} - w${imagemAtual}`;
-      document.getElementById('legendaImagem').textContent = `SETOR ${setorAtual.toUpperCase()} - PONTO ${pontoAtual} - SEMANA ${imagemAtual}`;
-    }
+  function verificarEmptyOuBuscar(token) {
+    // Tente carregar o empty.png primeiro
+    const emptyPath = `pontos/${setorAtual}${pontoAtual}/empty.png`;
+    const emptyTest = new window.Image();
 
-    function navegarImagem(direcao) {
-      if (imagemAtual === null) return;
-      const proximoNumero = imagemAtual + direcao;
-      if (proximoNumero < 22 || proximoNumero > 99) return;
-      verificarImagem(proximoNumero, direcao);
-    }
+    emptyTest.onload = function() {
+      if (token !== ultimoToken) return; // ignorar se mudou setor/ponto rápido demais
+      // Existe empty.png => não tem foto verdadeira!
+      document.getElementById('setorImagem').src = emptyPath;
+      document.getElementById('setorImagem').alt = 'Imagem não disponível';
+      document.getElementById('navButtons').style.display = 'none';
+      document.getElementById('legendaImagem').textContent = 'Nenhuma imagem encontrada';
+    };
 
-    function verificarImagem(numero, direcao) {
-      const caminho = `pontos/${setorAtual}${pontoAtual}/w${numero}.jpg`;
-      const teste = new Image();
-      teste.onload = () => {
-        imagemAtual = numero;
-        exibirImagemAtual();
-      };
-      teste.onerror = () => verificarImagem(numero + direcao, direcao);
-      teste.src = caminho;
+    emptyTest.onerror = function() {
+      if (token !== ultimoToken) return;
+      // NÃO existe empty.png, tente buscar foto real
+      buscarPrimeiraImagem(22, token);
+    };
+
+    emptyTest.src = emptyPath;
+  }
+
+  function buscarPrimeiraImagem(numero, token) {
+    if (numero > 99) {
+      document.getElementById('setorImagem').src = '';
+      document.getElementById('setorImagem').alt = 'Imagem não disponível';
+      document.getElementById('navButtons').style.display = 'none';
+      document.getElementById('legendaImagem').textContent = 'Nenhuma imagem encontrada';
+      return;
     }
-  </script>
+    const caminho = `pontos/${setorAtual}${pontoAtual}/w${numero}.jpg`;
+    const teste = new window.Image();
+
+    teste.onload = function() {
+      if (token !== ultimoToken) return;
+      imagemAtual = numero;
+      exibirImagemAtual();
+      document.getElementById('navButtons').style.display = 'flex';
+    };
+    teste.onerror = function() {
+      if (token !== ultimoToken) return;
+      buscarPrimeiraImagem(numero + 1, token);
+    };
+    teste.src = caminho;
+  }
+
+  function exibirImagemAtual() {
+    const caminho = `pontos/${setorAtual}${pontoAtual}/w${imagemAtual}.jpg`;
+    document.getElementById('setorImagem').src = caminho;
+    document.getElementById('setorImagem').alt = `Ponto ${pontoAtual} do Setor ${setorAtual.toUpperCase()} - w${imagemAtual}`;
+    document.getElementById('legendaImagem').textContent = `SETOR ${setorAtual.toUpperCase()} - PONTO ${pontoAtual} - SEMANA ${imagemAtual}`;
+  }
+
+  function navegarImagem(direcao) {
+    if (imagemAtual === null) return;
+    const proximoNumero = imagemAtual + direcao;
+    if (proximoNumero < 22 || proximoNumero > 99) return;
+    verificarImagem(proximoNumero, direcao, ultimoToken);
+  }
+
+  function verificarImagem(numero, direcao, token) {
+    const caminho = `pontos/${setorAtual}${pontoAtual}/w${numero}.jpg`;
+    const teste = new window.Image();
+    teste.onload = function() {
+      if (token !== ultimoToken) return;
+      imagemAtual = numero;
+      exibirImagemAtual();
+    };
+    teste.onerror = function() {
+      if (token !== ultimoToken) return;
+      verificarImagem(numero + direcao, direcao, token);
+    };
+    teste.src = caminho;
+  }
+</script>
 </body>
 </html>
