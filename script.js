@@ -25,8 +25,8 @@ function trocarImagem(setor, botao) {
   if (botaoSelecionado) botaoSelecionado.classList.remove('ativo');
   botao.classList.add('ativo'); botaoSelecionado = botao;
   setorAtual = setor; pontoAtual = null; imagemAtual = null;
-  document.getElementById('setorImagem').src = setores/${setor}.png;
-  document.getElementById('setorImagem').alt = Imagem do Setor ${setor.toUpperCase()};
+  document.getElementById('setorImagem').src = `setores/${setor}.png`;
+  document.getElementById('setorImagem').alt = `Imagem do Setor ${setor.toUpperCase()}`;
   document.getElementById('legendaImagem').textContent = '';
   document.getElementById('navButtons').style.display = 'none';
   gerarPontos(setor);
@@ -65,7 +65,7 @@ function abrirImagem(setor, ponto) {
 }
 
 function verificarEmptyOuBuscar(token) {
-  const emptyPath = pontos/${setorAtual}${pontoAtual}/empty.jpg;
+  const emptyPath = `pontos/${setorAtual}${pontoAtual}/empty.jpg`;
   const emptyTest = new window.Image();
   emptyTest.onload = function() {
     if (token !== ultimoToken) return;
@@ -90,7 +90,7 @@ function buscarPrimeiraImagem(numero, token) {
     return;
   }
 
-  const caminho = pontos/${setorAtual}${pontoAtual}/w${numero}.jpg;
+  const caminho = `pontos/${setorAtual}${pontoAtual}/w${numero}.jpg`;
   const teste = new window.Image();
   teste.onload = function() {
     if (token !== ultimoToken) return;
@@ -106,10 +106,10 @@ function buscarPrimeiraImagem(numero, token) {
 }
 
 function exibirImagemAtual() {
-  const caminho = pontos/${setorAtual}${pontoAtual}/w${imagemAtual}.jpg;
+  const caminho = `pontos/${setorAtual}${pontoAtual}/w${imagemAtual}.jpg`;
   document.getElementById('setorImagem').src = caminho;
-  document.getElementById('setorImagem').alt = Ponto ${pontoAtual} do Setor ${setorAtual.toUpperCase()} - w${imagemAtual};
-  document.getElementById('legendaImagem').textContent = SETOR ${setorAtual.toUpperCase()} - PONTO ${pontoAtual} - SEMANA ${imagemAtual};
+  document.getElementById('setorImagem').alt = `Ponto ${pontoAtual} do Setor ${setorAtual.toUpperCase()} - w${imagemAtual}`;
+  document.getElementById('legendaImagem').textContent = `SETOR ${setorAtual.toUpperCase()} - PONTO ${pontoAtual} - SEMANA ${imagemAtual}`;
 }
 
 function navegarImagem(direcao) {
@@ -120,7 +120,7 @@ function navegarImagem(direcao) {
 }
 
 function verificarImagem(numero, direcao, token) {
-  const caminho = pontos/${setorAtual}${pontoAtual}/w${numero}.jpg;
+  const caminho = `pontos/${setorAtual}${pontoAtual}/w${numero}.jpg`;
   const teste = new window.Image();
   teste.onload = function() {
     if (token !== ultimoToken) return;
@@ -141,7 +141,7 @@ window.onload = function() {
   botaoA.classList.add('ativo');
   botaoSelecionado = botaoA;
   setorAtual = 'a';
-  document.getElementById('setorImagem').src = setores/a.png;
-  document.getElementById('setorImagem').alt = Imagem do Setor A;
+  document.getElementById('setorImagem').src = `setores/a.png`;
+  document.getElementById('setorImagem').alt = `Imagem do Setor A`;
   gerarPontos('a');
 };
